@@ -4,8 +4,8 @@ local mod = get_mod("ForTheVacuumCapsule")
 local VOQueryConstants = require("scripts/settings/dialogue/vo_query_constants")
 local Vo = require("scripts/utilities/vo")
 
--- Whether or not the wheel and keybind functions have been initialized.
-local initialized = false
+-- Used for for finding the player who activated the voice line when hotkeys are pressed.
+local HudElementSmartTagging_instance
 
 -- Local enums
 local VoiceLines = mod:io_dofile("ForTheVacuumCapsule/scripts/mods/ForTheVacuumCapsule/definitions/ForTheVacuumCapsule_voiceLines")
@@ -340,7 +340,7 @@ local function setup_keybind_functions()
             local voice_event_data = option.voice_event_data
 
             if voice_event_data then
-                local parent = self._parent
+                local parent = HudElementSmartTagging_instance._parent
                 local player_unit = parent:player_unit()
 
                 if player_unit then
@@ -361,11 +361,15 @@ end
   - We can be sure the player is in a match and the necessary classes are instantiated by the game.
 ]]--
 mod:hook_safe("HudElementSmartTagging", "update", function(self)
-    if not initialized then
-        initialized = true
+    if not HudElementSmartTagging_instance then
+        HudElementSmartTagging_instance = self
 
         setup_keybind_functions()
+    end
+
+    if mod.setting_dirty then
         self:_populate_wheel()
+        mod.setting_dirty = false
     end
 end)
 
